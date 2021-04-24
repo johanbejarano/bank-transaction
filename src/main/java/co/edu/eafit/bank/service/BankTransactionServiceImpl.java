@@ -8,13 +8,14 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
+//import org.springframework.web.reactive.function.client.WebClient;
 
 import co.edu.eafit.bank.domain.Account;
 import co.edu.eafit.bank.domain.Transaction;
 import co.edu.eafit.bank.domain.TransactionType;
 import co.edu.eafit.bank.domain.Users;
 import co.edu.eafit.bank.dto.DepositDTO;
+import co.edu.eafit.bank.dto.OTPValidationRequest;
 import co.edu.eafit.bank.dto.OTPValidationResponse;
 import co.edu.eafit.bank.dto.TransactionResultDTO;
 import co.edu.eafit.bank.dto.TransferDTO;
@@ -24,6 +25,7 @@ import co.edu.eafit.bank.entityservice.TransactionService;
 import co.edu.eafit.bank.entityservice.TransactionTypeService;
 import co.edu.eafit.bank.entityservice.UsersService;
 import co.edu.eafit.bank.exception.ZMessManager;
+import co.edu.eafit.bank.openfeignclients.OTPServiceClient;
 import reactor.core.publisher.Mono;
 
 
@@ -45,8 +47,11 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 	@Autowired
 	TransactionService transactionService;
 	
+//	@Autowired
+//	WebClient otpWebClient;
+	
 	@Autowired
-	WebClient otpWebClient;
+	OTPServiceClient otpServiceClient;
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -112,20 +117,25 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 	
 	private OTPValidationResponse validateOTP(String user, String otp) throws Exception {
 		
-		String jsonBody = "{"
-				+ "    \"user\": \""+user+"\","
-				+ "    \"otp\": \""+otp+"\""
-				+ "}";
+		//Using OpenFeign
+		OTPValidationRequest otpValidationRequest = new OTPValidationRequest(user, otp);
+		return otpServiceClient.validateOTP(otpValidationRequest);
 		
-		Mono<OTPValidationResponse> monoResponse = otpWebClient.post()
-			.header("Content-Type", "application/json")
-			.bodyValue(jsonBody)
-			.retrieve()
-			.bodyToMono(OTPValidationResponse.class);
-		
-		OTPValidationResponse otpValidationResponse = monoResponse.block();
-		
-		return otpValidationResponse;
+//		//Using WebClient
+//		String jsonBody = "{"
+//				+ "    \"user\": \""+user+"\","
+//				+ "    \"otp\": \""+otp+"\""
+//				+ "}";
+//		
+//		Mono<OTPValidationResponse> monoResponse = otpWebClient.post()
+//			.header("Content-Type", "application/json")
+//			.bodyValue(jsonBody)
+//			.retrieve()
+//			.bodyToMono(OTPValidationResponse.class);
+//		
+//		OTPValidationResponse otpValidationResponse = monoResponse.block();
+//		
+//		return otpValidationResponse;
 		
 	}
 
