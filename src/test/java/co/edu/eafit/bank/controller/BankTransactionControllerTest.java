@@ -86,8 +86,9 @@ class BankTransactionControllerTest {
 		String accoIdDestination = "6592-7866-3024-5314";
 		Double amount = 15000.0;
 		String userEmail = "vondrusek1@wisc.edu";
+		String otp = "123465";
 
-		TransferDTO transferDTO = new TransferDTO(accoIdOrigin, accoIdDestination, amount, userEmail);
+		TransferDTO transferDTO = new TransferDTO(accoIdOrigin, accoIdDestination, amount, userEmail, otp);
 
 		String jsonTransferDTO = objectMapper.writeValueAsString(transferDTO);
 
