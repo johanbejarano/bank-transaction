@@ -25,7 +25,7 @@ import co.edu.eafit.bank.entityservice.TransactionService;
 import co.edu.eafit.bank.entityservice.TransactionTypeService;
 import co.edu.eafit.bank.entityservice.UsersService;
 import co.edu.eafit.bank.exception.ZMessManager;
-import co.edu.eafit.bank.openfeignclients.OTPServiceClient;
+import co.edu.eafit.bank.openfeignclients.FeignClients;
 import reactor.core.publisher.Mono;
 
 
@@ -50,8 +50,11 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 //	@Autowired
 //	WebClient otpWebClient;
 	
+//	@Autowired
+//	OTPServiceClient otpServiceClient;
+	
 	@Autowired
-	OTPServiceClient otpServiceClient;
+	FeignClients feignClients;
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -119,7 +122,7 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		
 		//Using OpenFeign
 		OTPValidationRequest otpValidationRequest = new OTPValidationRequest(user, otp);
-		return otpServiceClient.validateOTP(otpValidationRequest);
+		return feignClients.validateOTP(otpValidationRequest);
 		
 //		//Using WebClient
 //		String jsonBody = "{"
