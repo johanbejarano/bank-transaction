@@ -53,8 +53,11 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 //	@Autowired
 //	OTPServiceClient otpServiceClient;
 	
+//	@Autowired
+//	FeignClients feignClients;
+	
 	@Autowired
-	FeignClients feignClients;
+	OTPServiceCircuitBreaker otpServiceCircuitBreaker;
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -95,7 +98,7 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		Users user = userOptional.get();
 		
 		//Validate OTP token
-		OTPValidationResponse otpValidationResponse = validateOTP(
+		OTPValidationResponse otpValidationResponse = otpServiceCircuitBreaker.validateOTP(
 				transferDTO.getUserEmail(), 
 				transferDTO.getToken()
 			);
@@ -118,30 +121,6 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 
 	}
 	
-	private OTPValidationResponse validateOTP(String user, String otp) throws Exception {
-		
-		//Using OpenFeign
-		OTPValidationRequest otpValidationRequest = new OTPValidationRequest(user, otp);
-		return feignClients.validateOTP(otpValidationRequest);
-		
-//		//Using WebClient
-//		String jsonBody = "{"
-//				+ "    \"user\": \""+user+"\","
-//				+ "    \"otp\": \""+otp+"\""
-//				+ "}";
-//		
-//		Mono<OTPValidationResponse> monoResponse = otpWebClient.post()
-//			.header("Content-Type", "application/json")
-//			.bodyValue(jsonBody)
-//			.retrieve()
-//			.bodyToMono(OTPValidationResponse.class);
-//		
-//		OTPValidationResponse otpValidationResponse = monoResponse.block();
-//		
-//		return otpValidationResponse;
-		
-	}
-
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public TransactionResultDTO withdraw(WithdrawDTO withdrawDTO) throws Exception {
